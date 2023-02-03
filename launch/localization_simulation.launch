@@ -1,0 +1,32 @@
+<launch>
+	<group ns="turtlebot">
+		<arg name="x" default="0.0" />
+		<arg name="y" default="0.0" />
+		<arg name="z" default="0.1" />
+		<arg name="robot_name" default="turtlebot" />
+
+		<!-- load params -->
+		<param name="robot_gazebo" command="cat $(find turtlebot_description)/models/turtlebot/model.sdf" />
+		<param name="robot_description" command="cat $(find turtlebot_description)/urdf/turtlebot.urdf" />
+		<rosparam file="$(find swiftpro_desktop)/config/sim_config.yaml" command="load" />
+
+		<node name="swiftpro_sim_node" pkg="swiftpro_desktop" type="swiftpro_sim_node" output="screen" />
+		<node name="swiftpro_rviz_node" pkg="swiftpro_description" type="swiftpro_rviz_node" />
+
+		<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller joint_group_position_controller" />
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+		<node name="robot_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-sdf -x $(arg x) -y $(arg y) -z $(arg z) -model $(arg robot_name) -param robot_gazebo" />
+
+		<!-- mobile base nodelet manager -->
+		<node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager" />
+
+		<!-- velocity commands multiplexer -->
+		<node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+			<param name="yaml_cfg_file" value="$(find turtlebot_desktop)/config/kobuki_cmd_mux.yaml" />
+			<remap from="cmd_vel_mux/output" to="mobile_base/commands/velocity" />
+		</node>
+
+		<node name="rviz" pkg="rviz" type="rviz" args="-d $(find localization_project)/rviz/localization.rviz" />
+	</group>
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+    <include file="$(find localization_project)/launch/localization_simulation.launch" />
+    <include file="$(find small_house_world)/launch/small_house.launch" />
+    <include file="$(find turtlebot_desktop)/launch/keyboard_teleop.launch" />
+    <!--node pkg="localization_project" type="localization_node_prediction.py" name="localization_node"/-->
+
+</launch>
+    
